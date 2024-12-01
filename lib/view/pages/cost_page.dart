@@ -20,7 +20,10 @@ class _CostPageState extends State<CostPage> {
   dynamic selectedProvinceId;
   dynamic selectedDataCity;
   dynamic selectedCityId;
-  dynamic selectedCourier;
+  String? selectedCourier;
+
+  // Daftar kurir
+  final List<String> courierList = ['pos', 'tiki', 'sicepat', 'jne', 'lion'];
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +48,51 @@ class _CostPageState extends State<CostPage> {
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // Label untuk Kurir
+                        Text(
+                          "Kurir Pilihan",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
+                        ),
+                        SizedBox(height: 8),
+                        // Dropdown list for Courier
+                        DropdownButton<String>(
+                          isExpanded: true,
+                          value: selectedCourier,
+                          icon: Icon(Icons.arrow_drop_down),
+                          iconSize: 30,
+                          elevation: 2,
+                          hint: Text('Pilih kurir'),
+                          style: TextStyle(color: Colors.black),
+                          items: courierList
+                              .map<DropdownMenuItem<String>>((String courier) {
+                            return DropdownMenuItem<String>(
+                              value: courier,
+                              child: Text(courier.toUpperCase()),
+                            );
+                          }).toList(),
+                          onChanged: (newValue) {
+                            setState(() {
+                              selectedCourier = newValue;
+                            });
+                          },
+                        ),
+                        SizedBox(height: 16),
+                        // Label untuk Provinsi
+                        Text(
+                          "Provinsi Pilihan",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
+                        ),
+                        SizedBox(height: 8),
                         // Dropdown list for Province
                         Consumer<HomeViewmodel>(
                           builder: (context, value, _) {
@@ -81,11 +128,13 @@ class _CostPageState extends State<CostPage> {
                                   onChanged: (newValue) {
                                     setState(() {
                                       selectedProvinceId = newValue;
+                                      selectedCityId =
+                                          null; // Reset selected city
                                     });
-                                    // Ensure provinceId is not null before calling getCityList
+                                    // Pastikan provinceId tidak null sebelum memanggil getCityList
                                     if (newValue?.provinceId != null) {
                                       homeViewmodel.getCityList(newValue!
-                                          .provinceId!); // Use '!' to assert it's not null
+                                          .provinceId!); // Gunakan '!' untuk memastikan tidak null
                                     }
                                   },
                                 );
@@ -94,6 +143,17 @@ class _CostPageState extends State<CostPage> {
                             }
                           },
                         ),
+                        SizedBox(height: 16),
+                        // Label untuk Kota
+                        Text(
+                          "Kota Pilihan",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
+                        ),
+                        SizedBox(height: 8),
                         // Dropdown list for City
                         Consumer<HomeViewmodel>(
                           builder: (context, value, _) {
@@ -136,15 +196,37 @@ class _CostPageState extends State<CostPage> {
                             }
                           },
                         ),
+                        SizedBox(height: 16),
+                        // Button Cek Harga
+                        Center(
+                          child: ElevatedButton(
+                            onPressed: () {
+                              // Implementasikan logika untuk cek harga di sini
+                              if (selectedCourier != null &&
+                                  selectedProvinceId != null &&
+                                  selectedCityId != null) {
+                                // Lakukan tindakan (misalnya panggil API)
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Memulai pengecekan harga...'),
+                                  ),
+                                );
+                              } else {
+                                // Tampilkan peringatan jika input belum lengkap
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                        'Mohon lengkapi semua pilihan terlebih dahulu!'),
+                                  ),
+                                );
+                              }
+                            },
+                            child: Text('Cek Harga'),
+                          ),
+                        ),
                       ],
                     ),
                   ),
-                ),
-              ),
-              Flexible(
-                flex: 2,
-                child: Container(
-                  color: Colors.amber,
                 ),
               ),
             ],

@@ -20,9 +20,9 @@ class HomeRepository {
     }
   }
 
-Future<List<City>> fetchCityList(var provId) async {
+  Future<List<City>> fetchCityList(var provId) async {
     try {
-      dynamic response = await _apiServices.getApiResponse('/api/city');
+      dynamic response = await _apiServices.getApiResponse('/starter/city');
       List<City> result = [];
       if (response['rajaongkir']['status']['code'] == 200) {
         result = (response['rajaongkir']['results'] as List)

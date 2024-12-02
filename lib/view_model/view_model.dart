@@ -38,6 +38,21 @@ class HomeViewmodel with ChangeNotifier {
     });
   }
 
+  ApiResponse<List<City>> cityToList = ApiResponse.loading();
+  void setCityToList(ApiResponse<List<City>> response) {
+    cityToList = response;
+    notifyListeners();
+  }
+
+  Future<void> getCityToList(String provinceId) async {
+    setCityToList(ApiResponse.loading());
+    _homeRepo.fetchCityList(provinceId).then((value) {
+      setCityToList(ApiResponse.completed(value));
+    }).onError((error, stackTrace) {
+      setCityToList(ApiResponse.error(error.toString()));
+    });
+  }
+
   // Courier List State (if dynamic)
   ApiResponse<List<String>> courierList = ApiResponse.loading();
   void setCourierList(ApiResponse<List<String>> response) {
@@ -51,6 +66,32 @@ class HomeViewmodel with ChangeNotifier {
       setCourierList(ApiResponse.completed(value));
     }).onError((error, stackTrace) {
       setCourierList(ApiResponse.error(error.toString()));
+    });
+  }
+
+  ApiResponse<List<Cost>> costList = ApiResponse.loading();
+  void setCostList(ApiResponse<List<Cost>> response) {
+    costList = response;
+    notifyListeners();
+  }
+
+  Future<void> getCost(
+      String origin, String destination, int weight, String courier) async {
+    setCostList(ApiResponse.loading());
+    _homeRepo
+        .fetchCost(
+      origin: origin,
+      destination: destination,
+      weight: weight,
+      courier: courier,
+    )
+        .then((value) {
+      List<Cost> costs = (value as List)
+          .map((e) => Cost.fromJson(e))
+          .toList(); // Pastikan ada model Cost
+      setCostList(ApiResponse.completed(costs));
+    }).onError((error, stackTrace) {
+      setCostList(ApiResponse.error(error.toString()));
     });
   }
 }

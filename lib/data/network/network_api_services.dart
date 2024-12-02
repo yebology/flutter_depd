@@ -28,9 +28,31 @@ class NetworkApiServices implements BaseApiServices {
   }
 
   @override
-  Future postApiResponse(String url, data) {
-    // TODO: implement postApiResponse
-    throw UnimplementedError();
+  Future<dynamic> postApiResponse(String endpoint, dynamic data) async {
+    dynamic responseJson;
+    try {
+      print("DATA");
+      print(data);
+      final response = await http.post(
+        Uri.https(Const.baseUrl, endpoint),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+          'key': Const.apiKey,
+        },
+        body: jsonEncode(data),
+      );
+      responseJson = returnResponse(response);
+      print("RESPONSE");
+      return responseJson;
+    } on SocketException {
+      throw NoInternetException('No internet connection!');
+    } on TimeoutException {
+      throw FetchDataException('Network request timeout!');
+    } on FormatException {
+      throw FetchDataException('Invalid response format!');
+    } catch (e) {
+      throw FetchDataException('Unexpected error: $e');
+    }
   }
 
   dynamic returnResponse(http.Response response) {

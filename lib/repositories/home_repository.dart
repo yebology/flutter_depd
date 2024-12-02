@@ -20,6 +20,42 @@ class HomeRepository {
     }
   }
 
+  Future<dynamic> fetchCost(
+      {required String origin,
+      required String destination,
+      required int weight,
+      required String courier}) async {
+    try {
+      final Map<String, dynamic> body = {
+        'origin': origin,
+        'destination': destination,
+        'weight': weight,
+        'courier': courier,
+      };
+
+      print("Request Body: $body");
+
+      // Mengirimkan request POST dengan body
+      dynamic response = await _apiServices.postApiResponse('/starter/cost', {
+        'origin': origin,
+        'destination': destination,
+        'weight': weight,
+        'courier': courier,
+      });
+
+      if (response['rajaongkir']['status']['code'] == 200) {
+        print(response);
+        return response['rajaongkir']['results'];
+      } else {
+        throw Exception(
+            "Invalid status code: ${response['rajaongkir']['status']['code']}");
+      }
+    } catch (e) {
+      print("Error fetching cost: $e");
+      throw e;
+    }
+  }
+
   Future<List<City>> fetchCityList(var provId) async {
     try {
       dynamic response = await _apiServices.getApiResponse('/starter/city');

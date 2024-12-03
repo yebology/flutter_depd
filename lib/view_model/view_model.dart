@@ -69,8 +69,8 @@ class HomeViewmodel with ChangeNotifier {
     });
   }
 
-  ApiResponse<List<Cost>> costList = ApiResponse.loading();
-  void setCostList(ApiResponse<List<Cost>> response) {
+  ApiResponse<List<Costs>> costList = ApiResponse.loading();
+  void setCostList(ApiResponse<List<Costs>> response) {
     costList = response;
     notifyListeners();
   }
@@ -86,12 +86,11 @@ class HomeViewmodel with ChangeNotifier {
       courier: courier,
     )
         .then((value) {
-      List<Cost> costs = (value as List)
-          .map((e) => Cost.fromJson(e))
-          .toList(); // Pastikan ada model Cost
-      setCostList(ApiResponse.completed(costs));
+      print(value);
+      setCostList(ApiResponse.completed(value));
     }).onError((error, stackTrace) {
       setCostList(ApiResponse.error(error.toString()));
+      print(error);
     });
   }
 }

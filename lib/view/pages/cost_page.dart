@@ -122,20 +122,28 @@ class _CostPageState extends State<CostPage> {
                           child: Text(value.provinceList.message.toString()),
                         );
                       case Status.completed:
-                        return _buildDropdown<Province>(
-                          dataList: value.provinceList.data,
-                          selectedItem: selectedProvinceId,
-                          onChanged: (newValue) {
-                            setState(() {
-                              selectedProvinceId = newValue;
-                              selectedCityId = null;
+                        return DropdownButton(
+                            isExpanded: true,
+                            value: selectedProvinceId,
+                            icon: const Icon(Icons.arrow_drop_down),
+                            hint: Text('Pilih Provinsi'),
+                            items: value.provinceList.data!
+                                .map<DropdownMenuItem<Province>>(
+                                    (Province value) {
+                              return DropdownMenuItem(
+                                  value: value,
+                                  child: Text(value.province.toString()));
+                            }).toList(),
+                            onChanged: (newValue) {
+                              setState(() {
+                                selectedProvinceId = newValue;
+                                selectedCityId = null;
+                              });
+                              if (newValue != null) {
+                                homeViewmodel
+                                    .getCityList(selectedProvinceId.provinceId);
+                              }
                             });
-                            if (newValue?.provinceId != null) {
-                              homeViewmodel.getCityList(newValue!.provinceId!);
-                            }
-                          },
-                          hint: 'Pilih provinsi',
-                        );
                       default:
                         return Container();
                     }
@@ -167,16 +175,22 @@ class _CostPageState extends State<CostPage> {
                           child: Text(value.cityList.message.toString()),
                         );
                       case Status.completed:
-                        return _buildDropdown<City>(
-                          dataList: value.cityList.data,
-                          selectedItem: selectedCityId,
-                          onChanged: (newValue) {
-                            setState(() {
-                              selectedCityId = newValue;
+                        return DropdownButton(
+                            isExpanded: true,
+                            value: selectedCityId,
+                            icon: const Icon(Icons.arrow_drop_down),
+                            hint: Text('Pilih Kota'),
+                            items: value.cityList.data!
+                                .map<DropdownMenuItem<City>>((City value) {
+                              return DropdownMenuItem(
+                                  value: value,
+                                  child: Text(value.cityName.toString()));
+                            }).toList(),
+                            onChanged: (newValue) {
+                              setState(() {
+                                selectedCityId = newValue;
+                              });
                             });
-                          },
-                          hint: 'Pilih kota',
-                        );
                       default:
                         return Container();
                     }
@@ -208,21 +222,28 @@ class _CostPageState extends State<CostPage> {
                           child: Text(value.provinceList.message.toString()),
                         );
                       case Status.completed:
-                        return _buildDropdown<Province>(
-                          dataList: value.provinceList.data,
-                          selectedItem: selectedProvinceToId,
-                          onChanged: (newValue) {
-                            setState(() {
-                              selectedProvinceToId = newValue;
-                              selectedCityToId = null;
+                        return DropdownButton(
+                            isExpanded: true,
+                            value: selectedProvinceToId,
+                            icon: const Icon(Icons.arrow_drop_down),
+                            hint: Text('Pilih Provinsi'),
+                            items: value.provinceList.data!
+                                .map<DropdownMenuItem<Province>>(
+                                    (Province value) {
+                              return DropdownMenuItem(
+                                  value: value,
+                                  child: Text(value.province.toString()));
+                            }).toList(),
+                            onChanged: (newValue) {
+                              setState(() {
+                                selectedProvinceToId = newValue;
+                                selectedCityToId = null;
+                              });
+                              if (newValue != null) {
+                                homeViewmodel.getCityToList(
+                                    selectedProvinceToId.provinceId);
+                              }
                             });
-                            if (newValue?.provinceId != null) {
-                              homeViewmodel
-                                  .getCityToList(newValue!.provinceId!);
-                            }
-                          },
-                          hint: 'Pilih provinsi tujuan',
-                        );
                       default:
                         return Container();
                     }
@@ -252,16 +273,22 @@ class _CostPageState extends State<CostPage> {
                           child: Text(value.cityToList.message.toString()),
                         );
                       case Status.completed:
-                        return _buildDropdown<City>(
-                          dataList: value.cityToList.data,
-                          selectedItem: selectedCityToId,
-                          onChanged: (newValue) {
-                            setState(() {
-                              selectedCityToId = newValue;
+                        return DropdownButton(
+                            isExpanded: true,
+                            value: selectedCityToId,
+                            icon: const Icon(Icons.arrow_drop_down),
+                            hint: Text('Pilih Kota'),
+                            items: value.cityToList.data!
+                                .map<DropdownMenuItem<City>>((City value) {
+                              return DropdownMenuItem(
+                                  value: value,
+                                  child: Text(value.cityName.toString()));
+                            }).toList(),
+                            onChanged: (newValue) {
+                              setState(() {
+                                selectedCityToId = newValue;
+                              });
                             });
-                          },
-                          hint: 'Pilih kota tujuan',
-                        );
                       default:
                         return Container();
                     }
@@ -275,14 +302,16 @@ class _CostPageState extends State<CostPage> {
                     onPressed: () {
                       if (selectedCourier != null &&
                           selectedProvinceId != null &&
-                          selectedCityId != null) {
+                          selectedCityId != null &&
+                          selectedProvinceToId != null &&
+                          selectedCityToId != null) {
                         ScaffoldMessenger.of(context)
                             .showSnackBar(const SnackBar(
                           content: Text('Memulai pengecekan harga...'),
                         ));
                         homeViewmodel.getCost(
-                          selectedCityId.cityId,
-                          selectedCityToId.cityId,
+                          selectedCityId.cityId.toString(),
+                          selectedCityToId.cityId.toString(),
                           int.tryParse(_weightController.text.trim()) ?? 0,
                           selectedCourier!,
                         );
@@ -297,35 +326,57 @@ class _CostPageState extends State<CostPage> {
                     child: const Text('Cek Harga'),
                   ),
                 ),
+
+                const SizedBox(height: 16),
+
+                Consumer<HomeViewmodel>(
+                  builder: (context, value, _) {
+                    if (value.costList.status == Status.loading) {
+                      return const Center(child: CircularProgressIndicator());
+                    } else if (value.costList.status == Status.error) {
+                      return Center(
+                          child: Text('Error: ${value.costList.message}'));
+                    } else if (value.costList.status == Status.completed) {
+                      final costData =
+                          value.costList.data; // Get the List<Costs>
+
+                      if (costData != null && costData.isNotEmpty) {
+                        return Column(
+                          children: costData.map((costs) {
+                            return Card(
+                              margin: const EdgeInsets.symmetric(vertical: 8),
+                              child: ListTile(
+                                title: Text(costs.service.toString() ?? "Invalid"),
+                                subtitle: Column(
+                                  crossAxisAlignment: CrossAxisAlignment
+                                      .start, // Supaya teks rata kiri
+                                  children: [
+                                    Text(
+                                        'Description: ${costs.description ?? '-'}'),
+                                    Text('Cost: ${costs.cost![0].value ?? 0}'),
+                                    Text(
+                                        'Estimated day: ${costs.cost![0].etd ?? ''}'),
+                                    Text('Note: ${costs.cost![0].note ?? '-'}'),
+                                    // Tambahkan subtitle lainnya sesuai kebutuhan
+                                  ],
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        );
+                      } else {
+                        return const Text("No costs available.");
+                      }
+                    } else {
+                      return Container(); // This handles any other unknown state
+                    }
+                  },
+                )
               ],
             ),
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildDropdown<T>({
-    required List<T>? dataList,
-    required T? selectedItem,
-    required Function(T?) onChanged,
-    required String hint,
-  }) {
-    if (dataList == null) {
-      return const CircularProgressIndicator();
-    }
-    return DropdownButton<T>(
-      isExpanded: true,
-      value: selectedItem,
-      icon: const Icon(Icons.arrow_drop_down),
-      hint: Text(hint),
-      items: dataList.map<DropdownMenuItem<T>>((T item) {
-        return DropdownMenuItem<T>(
-          value: item,
-          child: Text(item.toString()),
-        );
-      }).toList(),
-      onChanged: onChanged,
     );
   }
 }

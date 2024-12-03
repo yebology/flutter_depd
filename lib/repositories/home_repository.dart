@@ -26,15 +26,6 @@ class HomeRepository {
       required int weight,
       required String courier}) async {
     try {
-      final Map<String, dynamic> body = {
-        'origin': origin,
-        'destination': destination,
-        'weight': weight,
-        'courier': courier,
-      };
-
-      print("Request Body: $body");
-
       // Mengirimkan request POST dengan body
       dynamic response = await _apiServices.postApiResponse('/starter/cost', {
         'origin': origin,
@@ -44,8 +35,13 @@ class HomeRepository {
       });
 
       if (response['rajaongkir']['status']['code'] == 200) {
-        print(response);
-        return response['rajaongkir']['results'];
+        List<dynamic> results = response['rajaongkir']['results'];
+        List<Costs> costs = results
+            .expand((result) => (result['costs'] as List)
+                .map((cost) => Costs.fromJson(cost as Map<String, dynamic>)))
+            .toList();
+        return costs;
+        // return response['rajaongkir']['results'];
       } else {
         throw Exception(
             "Invalid status code: ${response['rajaongkir']['status']['code']}");
